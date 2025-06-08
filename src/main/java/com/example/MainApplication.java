@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-public class git MainApplication {
+public class MainApplication {
 
     public static void main(String[] args) {
         FileLoader fileLoader = new FileLoader();
