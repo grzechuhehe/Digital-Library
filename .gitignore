@@ -40,6 +40,5 @@ mvnw.cmd
 maven-wrapper.properties
 
 src/main/resources/archive/
-.Zone.Identifier
 *.Zone.Identifier
 *.Zone.Identifier
