@@ -21,7 +21,7 @@ public abstract class BaseRecord {
     private String fileName;
     private String relativePath;
     private String fullPath;
-    private int size;
+    private Integer size;
     private Date uploaded;
     private Binary content;
 }
