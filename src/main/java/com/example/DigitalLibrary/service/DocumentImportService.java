@@ -113,6 +113,21 @@ public class DocumentImportService implements CommandLineRunner {
                             populateBaseFields(ir, path.getFileName().toString(), relative, full, size, uploaded, content, text);
                             inventoryReportRepository.save(ir);
                             break;
+                        case "StockReport":
+                            StockReport stock = new StockReport();
+                            populateBaseFields(stock, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            stockReportRepository.save(stock);
+                            break;
+                        case "Monthly":
+                            Monthly monthly = new Monthly();
+                            populateBaseFields(monthly, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            monthlyRepository.save(monthly);
+                            break;
+                        case "MonthlyCategory":
+                            MonthlyCategory monthlyCategory = new MonthlyCategory();
+                            populateBaseFields(monthlyCategory, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            monthlyCategoryRepository.save(monthlyCategory);
+                            break;
                         default:
                             System.err.println("Unknown document type for path: " + path);
                     }
@@ -130,8 +145,26 @@ public class DocumentImportService implements CommandLineRunner {
      */
     private String determineType(Path path, Path base) {
         Path rel = base.relativize(path);
-        if (rel.getNameCount() > 1 && rel.getName(0).equals("CompanyDocuments")) {
-            return rel.getName(1).toString();
+        if (rel.getNameCount() > 0 && "CompanyDocuments".equals(rel.getName(0).toString())) {
+            if (rel.getNameCount() > 2) {
+                String parent1 = rel.getName(1).toString();
+                if ("InventoryReport".equals(parent1)) {
+                    String parent2 = rel.getName(2).toString();
+                    if ("monthly-Category".equals(parent2)) {
+                        return "MonthlyCategory";
+                    } else if ("monthly".equals(parent2)) {
+                        if (rel.getNameCount() > 3) {
+                            return "StockReport";
+                        } else {
+                            return "Monthly";
+                        }
+                    }
+                    return "InventoryReport";
+                }
+            }
+            if (rel.getNameCount() > 1) {
+                return rel.getName(1).toString();
+            }
         }
         return rel.getName(0).toString();
     }
