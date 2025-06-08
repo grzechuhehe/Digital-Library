@@ -38,3 +38,5 @@ build/
 mvnw
 mvnw.cmd
 maven-wrapper.properties
+
+src/main/resources/archive/
