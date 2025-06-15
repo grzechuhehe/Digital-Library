@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Abstract base class for MongoDB documents with common fields.
@@ -31,4 +32,6 @@ public abstract class BaseRecord {
     /** Extracted text content of the document. */
     @TextIndexed
     private String textContent;
+    /** Extracted metadata from document text, e.g., amount, date, client. */
+    private Map<String, String> extractedData;
 }

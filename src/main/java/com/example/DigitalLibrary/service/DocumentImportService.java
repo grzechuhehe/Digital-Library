@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.stream.Stream;
+import java.util.Map;
 
 /**
  * Service to import PDF documents from a configured archive directory.
@@ -46,6 +47,7 @@ public class DocumentImportService implements CommandLineRunner {
     private final StockReportRepository stockReportRepository;
     private final MonthlyRepository monthlyRepository;
     private final MonthlyCategoryRepository monthlyCategoryRepository;
+    private final TextParsingService textParsingService;
 
     public DocumentImportService(InvoiceRepository invoiceRepository,
                                  PurchaseOrderRepository purchaseOrderRepository,
@@ -53,7 +55,8 @@ public class DocumentImportService implements CommandLineRunner {
                                  InventoryReportRepository inventoryReportRepository,
                                  StockReportRepository stockReportRepository,
                                  MonthlyRepository monthlyRepository,
-                                 MonthlyCategoryRepository monthlyCategoryRepository) {
+                                 MonthlyCategoryRepository monthlyCategoryRepository,
+                                 TextParsingService textParsingService) {
         this.invoiceRepository = invoiceRepository;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.shippingOrderRepository = shippingOrderRepository;
@@ -61,6 +64,7 @@ public class DocumentImportService implements CommandLineRunner {
         this.stockReportRepository = stockReportRepository;
         this.monthlyRepository = monthlyRepository;
         this.monthlyCategoryRepository = monthlyCategoryRepository;
+        this.textParsingService = textParsingService;
     }
 
     @Override
@@ -85,6 +89,7 @@ public class DocumentImportService implements CommandLineRunner {
                         return;
                     }
                     String text = pdfProcessor.extractTextFromPDF(bytes);
+                    Map<String, String> extractedData = textParsingService.parse(text);
                     String relative = base.relativize(path).toString();
                     String full = path.toAbsolutePath().toString();
                     Binary content = new Binary(bytes);
@@ -95,37 +100,37 @@ public class DocumentImportService implements CommandLineRunner {
                     switch (type) {
                         case "Invoices":
                             Invoice invoice = new Invoice();
-                            populateBaseFields(invoice, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(invoice, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             invoiceRepository.save(invoice);
                             break;
                         case "PurchaseOrders":
                             PurchaseOrder po = new PurchaseOrder();
-                            populateBaseFields(po, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(po, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             purchaseOrderRepository.save(po);
                             break;
                         case "ShippingOrders":
                             ShippingOrder so = new ShippingOrder();
-                            populateBaseFields(so, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(so, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             shippingOrderRepository.save(so);
                             break;
                         case "InventoryReport":
                             InventoryReport ir = new InventoryReport();
-                            populateBaseFields(ir, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(ir, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             inventoryReportRepository.save(ir);
                             break;
                         case "StockReport":
                             StockReport stock = new StockReport();
-                            populateBaseFields(stock, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(stock, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             stockReportRepository.save(stock);
                             break;
                         case "Monthly":
                             Monthly monthly = new Monthly();
-                            populateBaseFields(monthly, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(monthly, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             monthlyRepository.save(monthly);
                             break;
                         case "MonthlyCategory":
                             MonthlyCategory monthlyCategory = new MonthlyCategory();
-                            populateBaseFields(monthlyCategory, path.getFileName().toString(), relative, full, size, uploaded, content, text);
+                            populateBaseFields(monthlyCategory, path.getFileName().toString(), relative, full, size, uploaded, content, text, extractedData);
                             monthlyCategoryRepository.save(monthlyCategory);
                             break;
                         default:
@@ -176,7 +181,8 @@ public class DocumentImportService implements CommandLineRunner {
                                     int size,
                                     Date uploaded,
                                     Binary content,
-                                    String text) {
+                                    String text,
+                                    Map<String, String> extractedData) {
         record.setFileName(fileName);
         record.setRelativePath(relativePath);
         record.setFullPath(fullPath);
@@ -184,5 +190,6 @@ public class DocumentImportService implements CommandLineRunner {
         record.setUploaded(uploaded);
         record.setContent(content);
         record.setTextContent(text);
+        record.setExtractedData(extractedData);
     }
 }
